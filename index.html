@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاسبه نقطه سر به سر در شرکت‌های چندمحصولی | ارائه مدیریت عملیات</title>
+    <!-- Vazirmatn Font -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        :root {
+            --bg-dark: #0d0f12;
+            --bg-card: #161a20;
+            --bg-card-hover: #1e242d;
+            --border-color: #2a313d;
+            --text-primary: #f0f3f8;
+            --text-secondary: #9da8b6;
+            --accent-purple: #8b5cf6;
+            --accent-purple-glow: rgba(139, 92, 246, 0.25);
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-green-glow: rgba(16, 185, 129, 0.25);
+            --accent-red: #ef4444;
+            --accent-red-glow: rgba(239, 68, 68, 0.2);
+            --font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            line-height: 1.8;
+            direction: rtl;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Reading Progress Bar */
+        #progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 1000;
+        }
+
+        #progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            width: 0%;
+            transition: width 0.1s ease-out;
+            box-shadow: 0 0 10px var(--accent-purple);
+        }
+
+        /* Container & Layout */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        section {
+            padding: 4rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            color: #ffffff;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        h1 { font-size: 2.25rem; }
+        h2 { font-size: 1.75rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 1.75rem;
+            background: var(--accent-purple);
+            border-radius: 4px;
+            box-shadow: 0 0 10px var(--accent-purple-glow);
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+            font-size: 1.05rem;
+            text-align: justify;
+        }
+
+        /* Header / Meta Info */
+        .academic-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: var(--accent-purple);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .meta-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Cards & Content Containers */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+
+        /* Highlight Boxes & Formula Display */
+        .formula-box {
+            background: rgba(139, 92, 246, 0.05);
+            border-right: 4px solid var(--accent-purple);
+            border-radius: 8px 12px 12px 8px;
+            padding: 1.25rem 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.1rem;
+            color: #ffffff;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .formula-tag {
+            background: var(--bg-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        /* Interactive Quiz Section */
+        .interactive-section {
+            background: linear-gradient(180deg, var(--bg-card) 0%, rgba(22, 26, 32, 0.7) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .interactive-badge {
+            position: absolute;
+            top: -12px;
+            right: 24px;
+            background: var(--accent-purple);
+            color: #fff;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .quiz-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-wrapper label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .quiz-input {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            font-family: var(--font-family);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .quiz-input:focus {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px var(--accent-purple-glow);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--accent-purple), #6d28d9);
+            color: white;
+            border: none;
+            padding: 0.9rem 1.75rem;
+            border-radius: 10px;
+            font-family: var(--font-family);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 14px var(--accent-purple-glow);
+        }
+
+        .btn-submit:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--accent-purple-glow);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        /* Toast / Feedback Messages */
+        .feedback-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .feedback-message.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            box-shadow: 0 0 15px var(--accent-red-glow);
+        }
+
+        .feedback-message.success {
+            display: block;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+            box-shadow: 0 0 15px var(--accent-green-glow);
+        }
+
+        /* Locked Solution Output */
+        .solution-reveal {
+            display: none;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px dashed var(--border-color);
+            animation: slideDown 0.4s ease-out forwards;
+        }
+
+        .solution-reveal.active {
+            display: block;
+        }
+
+        .step-card {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .step-title {
+            color: var(--accent-blue);
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Canvas / Chart Container */
+        .chart-container {
+            width: 100%;
+            height: 380px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            position: relative;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Keyframe Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.75rem; }
+            h2 { font-size: 1.4rem; }
+            section { padding: 2.5rem 0; }
+            .interactive-section { padding: 1.25rem; }
+            .formula-box { font-size: 0.95rem; flex-direction: column; text-align: center; }
+            .chart-container { height: 300px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Reading Progress Bar -->
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+
+    <div class="container">
+
+        <!-- HERO SECTION -->
+        <section id="hero">
+            <div class="academic-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+             کلاس مدیریت عملیات
+            </div>
+            <h1>محاسبه نقطه سر به سر در شرکت‌های چندمحصولی</h1>
+            <p style="font-size: 1.15rem; color: #d1d5db; margin-top: 0.75rem;">
+                بررسی مدل‌های تصمیم‌گیری مالی و عملیاتی برای تحلیل سودآوری هم‌زمان چند محصول با ترکیب فروش ثابت
+            </p>
+
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">استاد محترم:</span>
+                    <span class="meta-value">دکتر نوری</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">دانشجو:</span>
+                    <span class="meta-value">محمد رضائی</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">رشته تحصیلی:</span>
+                    <span class="meta-value">مدیریت کسب و کار (MBA)</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">تاریخ:</span>
+                    <span class="meta-value">۱۵ آبان ۱۴۰۵</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 1: INTRODUCTION -->
+        <section id="section-1">
+            <h2>۱. آشنایی با نقطه سر به سر</h2>
+            <div class="card">
+                <p>
+                    نقطه سر به سر مقداری از فروش است که در آن درآمد کل با هزینه کل برابر می‌شود؛ یعنی شرکت نه سود می‌کند و نه زیان.
+                </p>
+                
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="font-size: 1.1rem; color: var(--accent-blue); margin-bottom: 0.75rem;">مثال پایه:</h3>
+                    <p>
+                        قیمت فروش هر واحد ۱۰۰ هزار تومان، هزینه متغیر هر واحد ۶۰ هزار تومان و هزینه ثابت ۲۰ میلیون تومان است.
+                    </p>
+                    
+                    <div class="formula-box">
+                        <span>حاشیه فروش هر واحد =</span>
+                        <span class="formula-tag">۱۰۰٬۰۰۰ − ۶۰٬۰۰۰</span>
+                        <span>= ۴۰٬۰۰۰ تومان</span>
+                    </div>
+
+                    <div class="formula-box">
+                        <span>نقطه سر به سر =</span>
+                        <span class="formula-tag">هزینه ثابت ÷ حاشیه فروش هر واحد</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- INTERACTIVE QUIZ: EXAMPLE 1 -->
+            <div class="interactive-section" id="quiz-base">
+                <div class="interactive-badge">تست تعاملی ۱</div>
+                <h3 style="font-size: 1.1rem; color: #fff;">محاسبه نقطه سر به سر تک‌محصولی</h3>
+                <p style="font-size: 0.95rem; margin-top: 0.5rem;">
+                    با توجه به اطلاعات فوق (هزینه ثابت ۲۰ میلیون تومان و حاشیه فروش ۴۰ هزار تومان)، نقطه سر به سر چند واحد است؟
+                </p>
+
+                <div class="quiz-input-group">
+                    <div class="input-wrapper">
+                        <label for="input-base-qty">تعداد واحد سر به سر را وارد کنید:</label>
+                        <input type="number" id="input-base-qty" class="quiz-input" placeholder="مثلاً: 450">
+                    </div>
+                    <button type="button" class="btn-submit" onclick="checkBaseQuiz()">
+                        بررسی پاسخ
+                    </button>
+                </div>
+
+                <div id="feedback-base" class="feedback-message"></div>
+
+                <!-- REVEALED SOLUTION -->
+                <div id="solution-base" class="solution-reveal">
+                    <h4 style="color: var(--accent-green); margin-bottom: 0.75rem;">راه‌حل و محاسبات کامل:</h4>
+                    <div class="step-card">
+                        <div class="step-title">محاسبه عددی:</div>
+                        <p style="margin: 0; color: #fff;">۲۰٬۰۰۰٬۰۰۰ ÷ ۴۰٬۰۰۰ = <strong>۵۰۰ واحد</strong></p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-title">اثبات سود/زیان صفر:</div>
+                        <p style="margin: 0;">
+                            در فروش ۵۰۰ واحد، درآمد کل ۵۰ میلیون تومان و هزینه کل نیز ۵۰ میلیون تومان است؛ بنابراین سود و زیان صفر خواهد بود.
+                        </p>
+                        <p style="margin-top: 0.75rem; color: #d1d5db; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">
+                            یعنی شرکت باید ۵۰۰ واحد از محصولش را بفروشد تا به نقطه سر به سر برسد؛ چون از فروش هر واحد به قیمت ۱۰۰ هزار تومان، پس از کسر ۶۰ هزار تومان هزینه متغیر، ۴۰ هزار تومان باقی می‌ماند تا هزینه ثابت ۲۰ میلیون تومانی شرکت جبران شود. بنابراین، با فروش ۵۰۰ واحد، شرکت ۵۰ میلیون تومان درآمد دارد و مجموع هزینه‌هایش نیز ۵۰ میلیون تومان است؛ در نتیجه نه سود می‌کند و نه زیان. اگر کمتر از ۵۰۰ واحد بفروشد، زیان می‌کند و اگر بیشتر بفروشد، با فرض ثابت ماندن سایر شرایط، وارد محدوده سودآوری می‌شود.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: MULTI-PRODUCT CONCEPT -->
+        <section id="section-2">
+            <h2>۲. نقطه سر به سر در شرکت‌های چندمحصولی</h2>
+            <div class="card">
+                <p>
+                    حالا سؤال اصلی اینه که اگر یک شرکت ۲۰ نوع محصول داشته باشه، باید نقطه سر به سر رو برای هر ۲۰ محصول جداگانه حساب کنیم؟
+                </p>
+                <p>
+                    جواب اینه که بستگی به هدف ما داره.
+                </p>
+                <p>
+                    اگر بخوایم سودآوری هر محصول رو به‌صورت مستقل بررسی کنیم، می‌تونیم هر محصول رو جداگانه تحلیل کنیم. اما اگر بخوایم بدونیم کل شرکت چقدر باید بفروشه تا به نقطه سر به سر برسه، باید محصولات رو با هم در نظر بگیریم.
+                </p>
+                <p>
+                    اینجا دو مفهوم مهم داریم: حاشیه فروش و ترکیب فروش.
+                </p>
+
+                <div class="formula-box">
+                    <span>حاشیه فروش هر واحد =</span>
+                    <span class="formula-tag">قیمت فروش − هزینه متغیر هر واحد</span>
+                </div>
+
+                <p style="margin-top: 1rem;">
+                    حاشیه فروش یعنی قیمت فروش محصول منهای هزینه متغیر اون. ترکیب فروش هم یعنی نسبت فروش محصولات مختلف به یکدیگر.
+                </p>
+                <p>
+                    مثلاً اگر به‌ازای فروش هر دو کیک، یک بیسکویت بفروشیم، ترکیب فروش ما دو کیک به یک بیسکویته.
+                </p>
+                <p>
+                    پس اگر ترکیب فروش نسبتاً ثابت باشه، می‌تونیم حاشیه فروش این ترکیب رو حساب کنیم و هزینه ثابت کل شرکت رو بر اون تقسیم کنیم تا به نقطه سر به سر برسیم.
+                </p>
+            </div>
+        </section>
+
+        <!-- SECTION 3: EXAMPLE 1 - SHIRIN ASAL -->
+        <section id="section-3">
+            <h2>۳. مثال اول: شیرین‌عسل</h2>
+            <div class="card">
+                <p>
+                    شرکت شیرین‌عسل تولیدکننده محصولات غذایی از جمله کیک و بیسکویت است. اعداد زیر فرضی و صرفاً آموزشی هستند.
+                </p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px;">
+                        <h4 style="color: var(--accent-purple); margin-bottom: 0.5rem;">محصول اول: کیک</h4>
+                        <ul style="list-style: none; font-size: 0.95rem; color: var(--text-secondary);">
+                            <li>• قیمت فروش: ۵۰٬۰۰۰ تومان</li>
+                            <li>• هزینه متغیر: ۳۰٬۰۰۰ تومان</li>
+                            <li>• حاشیه فروش: ۲۰٬۰۰۰ تومان</li>
+                        </ul>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px;">
+                        <h4 style="color: var(--accent-blue); margin-bottom: 0.5rem;">محصول دوم: بیسکویت</h4>
+                        <ul style="list-style: none; font-size: 0.95rem; color: var(--text-secondary);">
+                            <li>• قیمت فروش: ۳۰٬۰۰۰ تومان</li>
+                            <li>• هزینه متغیر: ۱۸٬۰۰۰ تومان</li>
+                            <li>• حاشیه فروش: ۱۲٬۰۰۰ تومان</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.25rem; background: rgba(139, 92, 246, 0.08); padding: 1rem; border-radius: 10px; border: 1px stroke var(--accent-purple);">
+                    <p style="margin: 0; color: #fff;">
+                        <strong>اطلاعات کلی:</strong> هزینه ثابت ماهانه برابر با <strong>۵۲۰ میلیون تومان</strong> و ترکیب فروش به‌صورت <strong>دو کیک و یک بیسکویت</strong> است.
+                    </p>
+                </div>
+            </div>
+
+            <!-- INTERACTIVE QUIZ: SHIRIN ASAL -->
+            <div class="interactive-section" id="quiz-shirin">
+                <div class="interactive-badge">تست تعاملی ۲ - شیرین‌عسل</div>
+                <h3 style="font-size: 1.1rem; color: #fff;">محاسبه مقادیر سر به سر شیرین‌عسل</h3>
+                <p style="font-size: 0.95rem; margin-top: 0.5rem;">
+                    با توجه به ترکیب فروش (۲ کیک و ۱ بیسکویت)، تعداد واحد سر به سر هر محصول را محاسبه و وارد کنید:
+                </p>
+
+                <div class="quiz-input-group">
+                    <div class="inputs-grid">
+                        <div class="input-wrapper">
+                            <label for="input-shirin-cake">تعداد کیک (عدد):</label>
+                            <input type="number" id="input-shirin-cake" class="quiz-input" placeholder="مثلاً: 15000">
+                        </div>
+                        <div class="input-wrapper">
+                            <label for="input-shirin-bisc">تعداد بیسکویت (عدد):</label>
+                            <input type="number" id="input-shirin-bisc" class="quiz-input" placeholder="مثلاً: 8000">
+                        </div>
+                    </div>
+                    <button type="button" class="btn-submit" onclick="checkShirinQuiz()">
+                        بررسی محاسبات شیرین‌عسل
+                    </button>
+                </div>
+
+                <div id="feedback-shirin" class="feedback-message"></div>
+
+                <!-- REVEALED SOLUTION -->
+                <div id="solution-shirin" class="solution-reveal">
+                    <h4 style="color: var(--accent-green); margin-bottom: 1rem;">گام‌های محاسبه و تایید نهایی:</h4>
+                    
+                    <div class="step-card">
+                        <div class="step-title">گام اول: حاشیه فروش یک ترکیب</div>
+                        <p style="margin: 0;">(۲ × ۲۰٬۰۰۰) + (۱ × ۱۲٬۰۰۰) = <strong>۵۲٬۰۰۰ تومان</strong></p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-title">گام دوم: تعداد ترکیب‌های لازم برای رسیدن به نقطه سر به سر</div>
+                        <p style="margin: 0;">۵۲۰٬۰۰۰٬۰۰۰ ÷ ۵۲٬۰۰۰ = <strong>۱۰٬۰۰۰ ترکیب</strong></p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-title">گام سوم: تعداد محصولات</div>
+                        <p style="margin: 0;">کیک: ۱۰٬۰۰۰ × ۲ = <strong>۲۰٬۰۰۰ عدد</strong></p>
+                        <p style="margin: 0;">بیسکویت: ۱۰٬۰۰۰ × ۱ = <strong>۱۰٬۰۰۰ عدد</strong></p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-title">گام چهارم: بررسی نتیجه</div>
+                        <ul style="list-style: none; font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            <li>• درآمد کیک: ۱٬۰۰۰ میلیون تومان</li>
+                            <li>• درآمد بیسکویت: ۳۰۰ میلیون تومان</li>
+                            <li>• درآمد کل: ۱٬۳۰۰ میلیون تومان</li>
+                            <li>• هزینه متغیر کل: ۷۸۰ میلیون تومان</li>
+                            <li>• هزینه ثابت: ۵۲۰ میلیون تومان</li>
+                            <li>• هزینه کل: ۱٬۳۰۰ میلیون تومان</li>
+                            <li>• <strong>سود یا زیان: صفر</strong></li>
+                        </ul>
+                    </div>
+
+                    <p style="font-size: 0.9rem; color: #a7f3d0; margin-top: 0.75rem;">
+                        پس با فروش ۲۰ هزار کیک و ۱۰ هزار بیسکویت، شرکت به نقطه سر به سر می‌رسد؛ مشروط بر اینکه فرض‌های قیمت، هزینه و ترکیب فروش برقرار باشند.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: EXAMPLE 2 - PAKSAN -->
+        <section id="section-4">
+            <h2>۴. مثال دوم: پاکسان</h2>
+            <div class="card">
+                <p>
+                    شرکت پاکسان تولیدکننده محصولات شوینده از جمله پودر لباس‌شویی و مایع ظرف‌شویی است. اعداد این مثال نیز فرضی و صرفاً آموزشی هستند.
+                </p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px;">
+                        <h4 style="color: var(--accent-purple); margin-bottom: 0.5rem;">محصول اول: پودر لباس‌شویی</h4>
+                        <ul style="list-style: none; font-size: 0.95rem; color: var(--text-secondary);">
+                            <li>• قیمت فروش: ۲۰۰٬۰۰۰ تومان</li>
+                            <li>• هزینه متغیر: ۱۴۰٬۰۰۰ تومان</li>
+                            <li>• حاشیه فروش: ۶۰٬۰۰۰ تومان</li>
+                        </ul>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px;">
+                        <h4 style="color: var(--accent-blue); margin-bottom: 0.5rem;">محصول دوم: مایع ظرف‌شویی</h4>
+                        <ul style="list-style: none; font-size: 0.95rem; color: var(--text-secondary);">
+                            <li>• قیمت فروش: ۱۲۰٬۰۰۰ تومان</li>
+                            <li>• هزینه متغیر: ۸۴٬۰۰۰ تومان</li>
+                            <li>• حاشیه فروش: ۳۶٬۰۰۰ تومان</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.25rem; background: rgba(59, 130, 246, 0.08); padding: 1rem; border-radius: 10px; border: 1px stroke var(--accent-blue);">
+                    <p style="margin: 0; color: #fff;">
+                        <strong>اطلاعات کلی:</strong> هزینه ثابت ماهانه برابر با <strong>۶۶۰ میلیون تومان</strong> و ترکیب فروش به‌صورت <strong>یک واحد پودر و دو واحد مایع ظرف‌شویی</strong> است.
+                    </p>
+                </div>
+            </div>
+
+            <!-- INTERACTIVE QUIZ: PAKSAN -->
+            <div class="interactive-section" id="quiz-paksan">
+                <div class="interactive-badge">تست تعاملی ۳ - پاکسان</div>
+                <h3 style="font-size: 1.1rem; color: #fff;">محاسبه مقادیر سر به سر پاکسان</h3>
+                <p style="font-size: 0.95rem; margin-top: 0.5rem;">
+                    با توجه به ترکیب فروش (۱ پودر و ۲ مایع)، تعداد واحد سر به سر هر محصول را مشخص کنید:
+                </p>
+
+                <div class="quiz-input-group">
+                    <div class="inputs-grid">
+                        <div class="input-wrapper">
+                            <label for="input-paksan-powder">تعداد پودر لباس‌شویی (واحد):</label>
+                            <input type="number" id="input-paksan-powder" class="quiz-input" placeholder="مثلاً: 4000">
+                        </div>
+                        <div class="input-wrapper">
+                            <label for="input-paksan-liquid">تعداد مایع ظرف‌شویی (واحد):</label>
+                            <input type="number" id="input-paksan-liquid" class="quiz-input" placeholder="مثلاً: 12000">
+                        </div>
+                    </div>
+                    <button type="button" class="btn-submit" onclick="checkPaksanQuiz()">
+                        بررسی محاسبات پاکسان
+                    </button>
+                </div>
+
+                <div id="feedback-paksan" class="feedback-message"></div>
+
+                <!-- REVEALED SOLUTION -->
+                <div id="solution-paksan" class="solution-reveal">
+                    <h4 style="color: var(--accent-green); margin-bottom: 1rem;">گام‌های محاسبه و تایید نهایی:</h4>
+                    
+                    <div class="step-card">
+                        <div class="step-title">گام اول: حاشیه فروش یک ترکیب</div>
+                        <p style="margin: 0;">۶۰٬۰۰۰ + (۲ × ۳۶٬۰۰۰) = <strong>۱۳۲٬۰۰۰ تومان</strong></p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-title">گام دوم: تعداد ترکیب‌های سر به سر</div>
+                        <p style="margin: 0;">۶۶۰٬۰۰۰٬۰۰۰ ÷ ۱۳۲٬۰۰۰ = <strong>۵٬۰۰۰ ترکیب</strong></p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-title">گام سوم: تعداد محصولات</div>
+                        <p style="margin: 0;">پودر لباس‌شویی: <strong>۵٬۰۰۰ واحد</strong></p>
+                        <p style="margin: 0;">مایع ظرف‌شویی: ۵٬۰۰۰ × ۲ = <strong>۱۰٬۰۰۰ واحد</strong></p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-title">گام چهارم: بررسی نتیجه</div>
+                        <ul style="list-style: none; font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            <li>• درآمد پودر لباس‌شویی: ۱٬۰۰۰ میلیون تومان</li>
+                            <li>• درآمد مایع ظرف‌شویی: ۱٬۲۰۰ میلیون تومان</li>
+                            <li>• درآمد کل: ۲٬۲۰۰ میلیون تومان</li>
+                            <li>• هزینه متغیر کل: ۱٬۵۴۰ میلیون تومان</li>
+                            <li>• هزینه ثابت: ۶۶۰ میلیون تومان</li>
+                            <li>• هزینه کل: ۲٬۲۰۰ میلیون تومان</li>
+                            <li>• <strong>سود یا زیان: صفر</strong></li>
+                        </ul>
+                    </div>
+
+                    <p style="font-size: 0.9rem; color: #a7f3d0; margin-top: 0.75rem;">
+                        بنابراین، با فروش ۵ هزار واحد پودر لباس‌شویی و ۱۰ هزار واحد مایع ظرف‌شویی، شرکت به نقطه سر به سر می‌رسد. با ثابت ماندن سایر شرایط، فروش بیشتر از این مقدار موجب سودآوری می‌شود.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: CHART -->
+        <section id="section-5">
+            <h2>۵. نمودار مفهومی</h2>
+            <div class="card">
+                <p>
+                    در نمودار نقطه سر به سر، محور افقی تعداد ترکیب‌های فروش و محور عمودی مبلغ درآمد و هزینه است. خط درآمد کل از صفر شروع می‌شود، اما خط هزینه کل از مقدار هزینه ثابت آغاز می‌شود. محل برخورد دو خط، نقطه سر به سر است. قبل از آن شرکت زیان می‌کند و بعد از آن، با ثابت ماندن سایر شرایط، سودآور می‌شود.
+                </p>
+                <p>
+                    در مثال شیرین‌عسل، نقطه برخورد در <strong>۱۰ هزار ترکیب فروش</strong> و <strong>درآمد ۱٬۳۰۰ میلیون تومان</strong> قرار دارد.
+                </p>
+
+                <!-- Chart Canvas Container -->
+                <div class="chart-container">
+                    <canvas id="breakEvenChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: CONCLUSION -->
+        <section id="section-6">
+            <h2>۶. جمع‌بندی نهایی</h2>
+            <div class="card" style="border-right: 4px solid var(--accent-green);">
+                <p>
+                    برای شرکتی با ۲۰ محصول، می‌تونیم نقطه سر به سر کل شرکت رو یک‌بار محاسبه کنیم؛ به شرط اینکه هزینه ثابت، حاشیه فروش محصولات و ترکیب فروش مشخص باشن.
+                </p>
+                <p>
+                    اما اگر بخوایم سودآوری هر محصول رو به‌صورت مستقل بررسی کنیم، باید هر محصول رو جداگانه تحلیل کنیم و هزینه‌های مربوط به اون رو هم در نظر بگیریم.
+                </p>
+                <p>
+                    نکته مهم اینه که اگر ترکیب فروش محصولات تغییر کنه، نقطه سر به سر کل شرکت هم ممکنه تغییر کنه. پس فقط تعداد محصولات مهم نیست؛ اینکه از هر محصول چه مقدار می‌فروشیم هم اهمیت زیادی داره.
+                </p>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer style="padding: 2.5rem 0; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+            <p style="text-align: center; margin-bottom: 0.5rem;">درس مدیریت عملیات | دانشکده مدیریت</p>
+            <p style="text-align: center; font-size: 0.8rem; opacity: 0.7;">پاییز ۱۴۰۵</p>
+        </footer>
+
+    </div>
+
+    <!-- Chart.js CDN for Visualizing the Break-Even Graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        /* =========================================================
+           1. HUMOROUS HUMOR & MESSAGES (MBA / EXECUTIVE THEMED)
+           ========================================================= */
+        const wrongMessages = [
+            "مدیر جان، هنوز صورت‌های مالی با این جواب موافقت نکردن!",
+            "این عدد از کدوم واحد سازمانی اومده؟ یه بار دیگه بررسی کن!",
+            "کارشناس محترم، لطفاً قبل از اعلام نتیجه، یک بار دیگه محاسبات رو کنترل کن!",
+            "نه مدیر جان، هنوز به نقطه سر به سر نرسیدیم!",
+            "این جواب فعلاً در مرحله بررسی کمیته تخصصیه!",
+            "یک بار دیگه حساب کن؛ اعتبار مدیریتی‌ات در خطر نیست، فعلاً!",
+            "سیستم هنوز مجوز افشای اطلاعات رو صادر نکرده!",
+            "مدیر جان، پیشنهاد می‌کنم با ماشین‌حساب جلسه‌ای برگزار کنی!",
+            "این مسئله هنوز در مرحله مذاکره با مغز شماست!",
+            "کارشناس عزیز، یک نفس عمیق؛ بعد دوباره محاسبه کن."
+        ];
+
+        const successMessages = [
+            "تأیید شد! مدیر جان، بالاخره گزارش قابل دفاع تحویل دادی!",
+            "دقیقاً همینه! واحد مالی چراغ سبز نشون داد.",
+            "جواب تأیید شد؛ حالا می‌تونیم جلسه رو با خیال راحت ادامه بدیم.",
+            "آفرین! این یکی از فیلترهای کنترل کیفیت رد شد."
+        ];
+
+        function getRandomItem(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        /* =========================================================
+           2. INTERACTIVE QUIZ LOGIC
+           ========================================================= */
+        
+        // --- QUIZ 1: Base Example ---
+        function checkBaseQuiz() {
+            const inputVal = parseInt(document.getElementById('input-base-qty').value.trim(), 10);
+            const feedbackEl = document.getElementById('feedback-base');
+            const solutionEl = document.getElementById('solution-base');
+
+            if (isNaN(inputVal) || inputVal <= 0) {
+                feedbackEl.innerText = "لطفاً یک عدد معتبر وارد کنید!";
+                feedbackEl.className = "feedback-message error";
+                return;
+            }
+
+            if (inputVal === 500) {
+                feedbackEl.innerText = getRandomItem(successMessages);
+                feedbackEl.className = "feedback-message success";
+                solutionEl.classList.add('active');
+            } else {
+                feedbackEl.innerText = getRandomItem(wrongMessages);
+                feedbackEl.className = "feedback-message error";
+                solutionEl.classList.remove('active');
+            }
+        }
+
+        // --- QUIZ 2: Shirin Asal Example ---
+        function checkShirinQuiz() {
+            const cakeVal = parseInt(document.getElementById('input-shirin-cake').value.trim(), 10);
+            const biscVal = parseInt(document.getElementById('input-shirin-bisc').value.trim(), 10);
+            const feedbackEl = document.getElementById('feedback-shirin');
+            const solutionEl = document.getElementById('solution-shirin');
+
+            if (isNaN(cakeVal) || isNaN(biscVal)) {
+                feedbackEl.innerText = "لطفاً مقادیر هر دو محصول را وارد کنید!";
+                feedbackEl.className = "feedback-message error";
+                return;
+            }
+
+            if (cakeVal === 20000 && biscVal === 10000) {
+                feedbackEl.innerText = getRandomItem(successMessages);
+                feedbackEl.className = "feedback-message success";
+                solutionEl.classList.add('active');
+            } else {
+                feedbackEl.innerText = getRandomItem(wrongMessages);
+                feedbackEl.className = "feedback-message error";
+                solutionEl.classList.remove('active');
+            }
+        }
+
+        // --- QUIZ 3: Paksan Example ---
+        function checkPaksanQuiz() {
+            const powderVal = parseInt(document.getElementById('input-paksan-powder').value.trim(), 10);
+            const liquidVal = parseInt(document.getElementById('input-paksan-liquid').value.trim(), 10);
+            const feedbackEl = document.getElementById('feedback-paksan');
+            const solutionEl = document.getElementById('solution-paksan');
+
+            if (isNaN(powderVal) || isNaN(liquidVal)) {
+                feedbackEl.innerText = "لطفاً مقادیر هر دو محصول را به دقت وارد کنید!";
+                feedbackEl.className = "feedback-message error";
+                return;
+            }
+
+            if (powderVal === 5000 && liquidVal === 10000) {
+                feedbackEl.innerText = getRandomItem(successMessages);
+                feedbackEl.className = "feedback-message success";
+                solutionEl.classList.add('active');
+            } else {
+                feedbackEl.innerText = getRandomItem(wrongMessages);
+                feedbackEl.className = "feedback-message error";
+                solutionEl.classList.remove('active');
+            }
+        }
+
+        /* Allow Enter Key Submission */
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('input-base-qty').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') checkBaseQuiz();
+            });
+            document.getElementById('input-shirin-bisc').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') checkShirinQuiz();
+            });
+            document.getElementById('input-paksan-liquid').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') checkPaksanQuiz();
+            });
+        });
+
+        /* =========================================================
+           3. SCROLL PROGRESS INDICATOR
+           ========================================================= */
+        window.onscroll = function() {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById("progress-bar").style.width = scrolled + "%";
+        };
+
+        /* =========================================================
+           4. BREAK-EVEN CHART (CHART.JS)
+           ========================================================= */
+        window.onload = function() {
+            const ctx = document.getElementById('breakEvenChart').getContext('2d');
+            
+            // Data for Shirin Asal Example:
+            // Fixed Cost = 520 M
+            // Variable Cost per Combo = 78 K (Total cost slope)
+            // Revenue per Combo = 130 K
+            // Break-even point = 10,000 Combos -> Revenue/Cost = 1,300 M
+
+            const labels = [0, 2500, 5000, 7500, 10000, 12500, 15000];
+            const fixedCosts = labels.map(() => 520);
+            const totalCosts = labels.map(q => 520 + (q * 0.078));
+            const totalRevenues = labels.map(q => q * 0.130);
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.map(l => l.toLocaleString('fa-IR') + ' ترکیب'),
+                    datasets: [
+                        {
+                            label: 'درآمد کل (میلیون تومان)',
+                            data: totalRevenues,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'هزینه کل (میلیون تومان)',
+                            data: totalCosts,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'هزینه ثابت (میلیون تومان)',
+                            data: fixedCosts,
+                            borderColor: '#8b5cf6',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            fill: false,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#9da8b6',
+                                font: { family: 'Vazirmatn', size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            bodyFont: { family: 'Vazirmatn' },
+                            titleFont: { family: 'Vazirmatn' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#9da8b6', font: { family: 'Vazirmatn' } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#9da8b6', font: { family: 'Vazirmatn' } }
+                        }
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>
